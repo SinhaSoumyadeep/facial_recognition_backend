@@ -17,12 +17,8 @@ session = boto3.session.Session(profile_name='faces')
 s3_client = session.client('s3')
 
 def encode_celebrity_faces():
-
     path = 'images'
-
     data = []
-
-
     for filename in os.listdir(path):
         image = face_recognition.face_encodings(face_recognition.load_image_file(path+"/"+filename))[0]
         image_list = image.tolist()
@@ -35,13 +31,6 @@ def encode_celebrity_faces():
 
 
 def download_dir(local, bucket, client=s3_client):
-    """
-    params:
-    - prefix: pattern to match in s3
-    - local: local path to folder in which to place files
-    - bucket: s3 bucket with target contents
-    - client: initialized s3 client object
-    """
     keys = []
     dirs = []
     next_token = ''
@@ -98,16 +87,17 @@ def pre_load():
 class MyOwnView(APIView):
     def post(self, request):
         data = request.data
-        dict1 = json.loads(data['l'])
+        dict1 = data['upload']
         unknown_encoding = np.array(dict1)
         results = face_recognition.face_distance(celebrity_encodings, unknown_encoding)
 
         m = ''
+        dis = min(results)
         if len(results) != 0:
             m = min(enumerate(results), key=itemgetter(1))[0]
             print(face_map.get(m))
 
-        return Response({'distance': face_map.get(m)})
+        return Response({'url': face_map.get(m), 'distance': dis})
 
     def get(self, request):
         with safe_open_w('encodings/data.json', 'r') as json_file:
@@ -122,6 +112,16 @@ class MyOwnView(APIView):
             count = count + 1
 
         return Response({'loaded': True})
+
+
+class MyOtherView(APIView):
+    def post(self, request):
+        data = request.data
+        img = data['image']
+
+        unknown_image = face_recognition.load_image_file(img.open())
+        unknown_encoding = face_recognition.face_encodings(unknown_image)[0]
+        return Response({'upload': unknown_encoding})
 
 
 
