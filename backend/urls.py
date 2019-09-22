@@ -15,8 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from face import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('blog/', include('face.urls'))
 ]
+
+views.pre_load()
