@@ -12,11 +12,9 @@ import boto3
 
 celebrity_encodings = []
 face_map ={}
-s3_client = boto3.client(
-    's3',
-    aws_access_key_id='AKIAIAD3JAO6BH7SK47Q',
-    aws_secret_access_key='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'
-)
+
+session = boto3.session.Session(profile_name='faces')
+s3_client = session.client('s3')
 
 def encode_celebrity_faces():
 
